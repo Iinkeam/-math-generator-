@@ -3,179 +3,230 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Генератор Рівнянь</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.11.1/plotly.min.js"></script>
+    <title>Генератор рівнянь і графіків</title>
     <style>
         body {
-            background-color: #f4f4f4;
             font-family: Arial, sans-serif;
+            background-color: white;
+            color: black;
+            padding: 20px;
+            margin: 0;
         }
 
-        #site-title {
-            margin-top: 50px;
-            font-size: 36px;
+        #settingsModal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        #settingsModalContent {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
+        }
+
+        .hidden {
+            display: none;
         }
 
         button {
-            width: 200px;
-            margin: 15px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
         }
 
-        #task-container {
+        #settingsButton {
             margin-top: 20px;
         }
 
-        #user-input {
-            width: 80%;
+        #task {
             margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <div class="container text-center">
-        <h1 id="site-title">Генератор Рівнянь</h1>
-        <button id="start-btn" class="btn btn-primary btn-lg mt-5">Почати</button>
+    <h1 id="siteTitle">Генератор рівнянь і графіків</h1>
 
-        <div id="difficulty-section" class="d-none">
-            <h3>Оберіть складність</h3>
-            <button class="btn btn-secondary btn-lg mt-3" id="easy-btn">Легкий</button>
-            <button class="btn btn-secondary btn-lg mt-3" id="medium-btn">Середній</button>
-            <button class="btn btn-secondary btn-lg mt-3" id="hard-btn">Складний</button>
+    <!-- Кнопка Налаштування -->
+    <button id="settingsButton" onclick="openSettings()">Налаштування</button>
+
+    <!-- Модальне вікно для налаштувань -->
+    <div id="settingsModal" class="hidden">
+        <div id="settingsModalContent">
+            <h3>Налаштування</h3>
+            <!-- Зміна теми -->
+            <label for="theme">Тема:</label>
+            <select id="theme">
+                <option value="light">Світла</option>
+                <option value="dark">Темна</option>
+            </select>
+            <br><br>
+            <!-- Зміна мови -->
+            <label for="language">Мова:</label>
+            <select id="language">
+                <option value="uk">Українська</option>
+                <option value="en">English</option>
+            </select>
+            <br><br>
+            <!-- Зміна складності -->
+            <label for="difficulty">Складність:</label>
+            <select id="difficulty">
+                <option value="easy">Легкий</option>
+                <option value="medium">Середній</option>
+                <option value="hard">Складний</option>
+            </select>
+            <br><br>
+            <!-- Вибір завдання -->
+            <label for="taskType">Тип завдання:</label>
+            <select id="taskType">
+                <option value="equation">Рівняння</option>
+                <option value="graph">Графік</option>
+                <option value="inequality">Нерівність</option>
+            </select>
+            <br><br>
+            <button onclick="saveSettings()">Зберегти</button>
+            <button onclick="closeSettings()">Закрити</button>
         </div>
-
-        <div id="task-section" class="d-none">
-            <h3>Оберіть тип завдання</h3>
-            <button class="btn btn-info btn-lg mt-3" id="equations-btn">Рівняння</button>
-            <button class="btn btn-info btn-lg mt-3" id="graphs-btn">Графіки</button>
-            <button class="btn btn-info btn-lg mt-3" id="inequalities-btn">Нерівності</button>
-        </div>
-
-        <!-- Секція для завдань -->
-        <div id="task-container" class="d-none">
-            <div id="task"></div>
-            <input type="text" id="user-input" class="form-control mt-3" placeholder="Введіть формулу">
-            <button id="check-btn" class="btn btn-success btn-lg mt-3">Перевірити</button>
-            <button id="next-btn" class="btn btn-warning btn-lg mt-3">Наступне</button>
-        </div>
-
-        <!-- Налаштування -->
-        <div id="settings-section" class="d-none">
-            <button class="btn btn-secondary mt-3" id="back-to-menu-btn">Повернутись в меню</button>
-            <button class="btn btn-secondary mt-3" id="change-difficulty-btn">Змінити складність</button>
-            <button class="btn btn-secondary mt-3" id="change-language-btn">Змінити мову</button>
-            <button class="btn btn-secondary mt-3" id="view-statistics-btn">Статистика</button>
-        </div>
-
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Основний контент -->
+    <div id="mainContent">
+        <button id="startButton" onclick="startGame()">Почати</button>
+        <div id="difficultySelection" class="hidden">
+            <button onclick="selectDifficulty('easy')">Легкий</button>
+            <button onclick="selectDifficulty('medium')">Середній</button>
+            <button onclick="selectDifficulty('hard')">Складний</button>
+        </div>
+        <div id="taskSelection" class="hidden">
+            <button onclick="generateTask('equation')">Рівняння</button>
+            <button onclick="generateTask('graph')">Графік</button>
+            <button onclick="generateTask('inequality')">Нерівність</button>
+        </div>
+        <div id="task" class="hidden"></div>
+        <button id="nextButton" class="hidden" onclick="nextTask()">Наступне завдання</button>
+        <button id="prevButton" class="hidden" onclick="previousTask()">Попереднє завдання</button>
+        <button id="checkButton" class="hidden" onclick="checkAnswer()">Перевірити</button>
+    </div>
+
     <script>
-        $(document).ready(function() {
-            let currentTask = 0; // Задача номер
-            let correctAnswers = 0;
-            let incorrectAnswers = 0;
+        let currentTask = 0;
+        let tasks = [];
+        let difficulty = 'easy'; // Default difficulty
+        let taskType = 'equation'; // Default task type
 
-            // Показує головне меню
-            $("#start-btn").click(function() {
-                $("#start-btn").addClass("d-none");
-                $("#difficulty-section").removeClass("d-none");
-            });
+        // Функція для початку гри
+        function startGame() {
+            document.getElementById("startButton").style.display = 'none';
+            document.getElementById("difficultySelection").style.display = 'block';
+        }
 
-            // Вибір складності
-            $("#easy-btn, #medium-btn, #hard-btn").click(function() {
-                $("#difficulty-section").addClass("d-none");
-                $("#task-section").removeClass("d-none");
-            });
+        // Вибір складності
+        function selectDifficulty(level) {
+            difficulty = level;
+            document.getElementById("difficultySelection").style.display = 'none';
+            document.getElementById("taskSelection").style.display = 'block';
+        }
 
-            // Вибір типу завдання
-            $("#equations-btn").click(function() {
-                generateEquationTask();
-                $("#task-section").addClass("d-none");
-                $("#task-container").removeClass("d-none");
-            });
-
-            $("#graphs-btn").click(function() {
-                generateGraphTask();
-                $("#task-section").addClass("d-none");
-                $("#task-container").removeClass("d-none");
-            });
-
-            $("#inequalities-btn").click(function() {
-                generateInequalityTask();
-                $("#task-section").addClass("d-none");
-                $("#task-container").removeClass("d-none");
-            });
-
-            // Перевірка відповіді
-            $("#check-btn").click(function() {
-                const userAnswer = $("#user-input").val();
-                // Логіка перевірки відповіді
-                // Тут має бути код для перевірки правильності відповіді
-                alert("Перевірка відповіді ще не реалізована.");
-            });
-
-            // Перехід до наступного завдання
-            $("#next-btn").click(function() {
-                // Генерація нового завдання
-                alert("Перехід до наступного завдання ще не реалізований.");
-            });
-
-            // Повернення в головне меню
-            $("#back-to-menu-btn").click(function() {
-                location.reload();
-            });
-
-            // Генерація випадкових рівнянь
-            function generateEquationTask() {
-                const randomType = Math.floor(Math.random() * 3);
-                let equation = "";
-                if (randomType === 0) {
-                    // Лінійне рівняння
-                    equation = "ax + b = c";
-                } else if (randomType === 1) {
-                    // Квадратне рівняння
-                    equation = "ax^2 + bx + c = 0";
-                } else {
-                    // Рівняння з коренем
-                    equation = "√(ax + b) = c";
-                }
-                $("#task").text(`Завдання: ${equation}`);
+        // Генерація завдання
+        function generateTask(type) {
+            let taskContent = '';
+            if (type === 'equation') {
+                taskContent = 'Рівняння: x^2 + 3x - 4 = 0';
+            } else if (type === 'graph') {
+                taskContent = 'Графік функції y = x^2';
+            } else if (type === 'inequality') {
+                taskContent = 'Нерівність: x^2 - 4 < 0';
             }
 
-            // Генерація графіків
-            function generateGraphTask() {
-                const x_values = [];
-                const y_values = [];
-                for (let x = -10; x <= 10; x++) {
-                    x_values.push(x);
-                    y_values.push(x * x); // Наприклад, графік x^2
-                }
-                const data = [{
-                    x: x_values,
-                    y: y_values,
-                    type: 'scatter'
-                }];
-                const layout = {
-                    title: 'Графік функції y = x^2'
-                };
-                Plotly.newPlot('task', data, layout);
+            tasks.push({ type: type, content: taskContent, answer: '' });
+            displayTask(currentTask);
+            document.getElementById("taskSelection").style.display = 'none';
+            document.getElementById("task").style.display = 'block';
+            document.getElementById("checkButton").style.display = 'block';
+            document.getElementById("nextButton").style.display = 'block';
+        }
+
+        // Відображення завдання
+        function displayTask(taskIndex) {
+            let task = tasks[taskIndex];
+            document.getElementById("task").innerHTML = task.content;
+        }
+
+        // Перевірка відповіді
+        function checkAnswer() {
+            let task = tasks[currentTask];
+            let userAnswer = prompt('Введіть відповідь для цього завдання:');
+            if (userAnswer === task.answer) {
+                alert('Правильно!');
+            } else {
+                alert('Неправильно!');
+            }
+        }
+
+        // Перехід до наступного завдання
+        function nextTask() {
+            currentTask++;
+            if (currentTask < tasks.length) {
+                displayTask(currentTask);
+            }
+        }
+
+        // Перехід до попереднього завдання
+        function previousTask() {
+            currentTask--;
+            if (currentTask >= 0) {
+                displayTask(currentTask);
+            }
+        }
+
+        // Функція для відкриття налаштувань
+        function openSettings() {
+            document.getElementById("settingsModal").classList.remove("hidden");
+        }
+
+        // Функція для закриття налаштувань
+        function closeSettings() {
+            document.getElementById("settingsModal").classList.add("hidden");
+        }
+
+        // Функція для збереження налаштувань
+        function saveSettings() {
+            let selectedTheme = document.getElementById("theme").value;
+            let selectedLanguage = document.getElementById("language").value;
+            let selectedDifficulty = document.getElementById("difficulty").value;
+            let selectedTaskType = document.getElementById("taskType").value;
+
+            // Збереження теми
+            if (selectedTheme === "dark") {
+                document.body.style.backgroundColor = "#333";
+                document.body.style.color = "white";
+            } else {
+                document.body.style.backgroundColor = "white";
+                document.body.style.color = "black";
             }
 
-            // Генерація нерівностей
-            function generateInequalityTask() {
-                const randomType = Math.floor(Math.random() * 2);
-                let inequality = "";
-                if (randomType === 0) {
-                    // Лінійна нерівність
-                    inequality = "ax + b ≤ c";
-                } else {
-                    // Квадратна нерівність
-                    inequality = "ax^2 + bx + c ≥ 0";
-                }
-                $("#task").text(`Завдання: ${inequality}`);
+            // Зміна мови
+            if (selectedLanguage === "en") {
+                document.getElementById("siteTitle").textContent = "Equation and Graph Generator";
+            } else {
+                document.getElementById("siteTitle").textContent = "Генератор рівнянь і графіків";
             }
-        });
+
+            // Збереження складності
+            difficulty = selectedDifficulty;
+
+            // Збереження типу завдання
+            taskType = selectedTaskType;
+
+            closeSettings();  // Закриваємо налаштування після збереження
+        }
     </script>
 </body>
 </html>
