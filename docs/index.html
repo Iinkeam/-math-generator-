@@ -47,6 +47,11 @@
 
         #settingsButton {
             margin-top: 20px;
+            padding: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            position: relative;
+            z-index: 10;
         }
 
         #task {
@@ -162,15 +167,15 @@
             let taskAnswer = '';
 
             if (type === 'equation') {
-                taskContent = 'Рівняння: x^2 + 3x - 4 = 0';
-                taskAnswer = 'x^2 + 3x - 4 = 0';
+                taskContent = generateRandomEquation();
+                taskAnswer = taskContent;
             } else if (type === 'graph') {
-                taskContent = 'Графік функції y = x^2';
-                taskAnswer = 'y = x^2';
-                generateGraph();
+                taskContent = generateRandomGraph();
+                taskAnswer = taskContent;
+                generateGraph(); // Генеруємо графік
             } else if (type === 'inequality') {
-                taskContent = 'Нерівність: x^2 - 4 < 0';
-                taskAnswer = 'x^2 - 4 < 0';
+                taskContent = generateRandomInequality();
+                taskAnswer = taskContent;
             }
 
             tasks.push({ type: type, content: taskContent, answer: taskAnswer });
@@ -180,6 +185,27 @@
             document.getElementById("inputAnswer").style.display = 'block';
             document.getElementById("checkButton").style.display = 'block';
             document.getElementById("nextButton").style.display = 'block';
+        }
+
+        // Випадкове рівняння
+        function generateRandomEquation() {
+            let a = Math.floor(Math.random() * 10) + 1;
+            let b = Math.floor(Math.random() * 10) + 1;
+            let c = Math.floor(Math.random() * 10) - 5;
+            return `${a}x^2 + ${b}x + ${c} = 0`;
+        }
+
+        // Випадковий графік
+        function generateRandomGraph() {
+            let types = ['y = x^2', 'y = 2x + 1', 'y = Math.sin(x)', 'y = Math.exp(x)'];
+            return types[Math.floor(Math.random() * types.length)];
+        }
+
+        // Випадкова нерівність
+        function generateRandomInequality() {
+            let a = Math.floor(Math.random() * 10) + 1;
+            let b = Math.floor(Math.random() * 10) + 1;
+            return `${a}x^2 - ${b} < 0`;
         }
 
         // Відображення завдання
@@ -196,12 +222,32 @@
             canvas.width = 500;
             canvas.height = 500;
 
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Очистити попередній графік
+
             ctx.beginPath();
             ctx.moveTo(0, 250);
 
-            for (let x = -250; x <= 250; x++) {
-                let y = Math.pow(x / 50, 2); // Функція y = x^2
-                ctx.lineTo(250 + x, 250 - y * 50);
+            let equation = tasks[currentTask].content;
+            if (equation === 'y = x^2') {
+                for (let x = -250; x <= 250; x++) {
+                    let y = Math.pow(x / 50, 2); // Функція y = x^2
+                    ctx.lineTo(250 + x, 250 - y * 50);
+                }
+            } else if (equation === 'y = 2x + 1') {
+                for (let x = -250; x <= 250; x++) {
+                    let y = (2 * x + 1) / 50;
+                    ctx.lineTo(250 + x, 250 - y * 50);
+                }
+            } else if (equation === 'y = Math.sin(x)') {
+                for (let x = -250; x <= 250; x++) {
+                    let y = Math.sin(x / 50);
+                    ctx.lineTo(250 + x, 250 - y * 50);
+                }
+            } else if (equation === 'y = Math.exp(x)') {
+                for (let x = -250; x <= 250; x++) {
+                    let y = Math.exp(x / 50) / 5;
+                    ctx.lineTo(250 + x, 250 - y * 50);
+                }
             }
 
             ctx.strokeStyle = 'blue';
